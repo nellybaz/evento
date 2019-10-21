@@ -1,0 +1,16 @@
+beautifulsoup4==4.8.0
+certifi==2019.6.16
+chardet==3.0.4
+Django==2.2.6
+idna==2.8
+pdf2image==1.9.0
+pi==0.1.2
+Pillow==6.2.0
+PyPDF2==1.26.0
+pytz==2019.3
+reportlab==3.5.28
+requests==2.22.0
+soupsieve==1.9.2
+sqlparse==0.3.0
+urllib3==1.25.3
+Wand==0.5.7

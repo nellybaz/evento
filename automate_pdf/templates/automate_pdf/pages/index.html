@@ -1,0 +1,20 @@
+{% extends 'automate_pdf/base.html' %}
+
+{% block content %}
+    <h1>Welcome</h1>
+    <br>
+    <br>
+    <!-- <input type="file" name="invite_pdf" id="invite_pdf">
+    <input type="file" name="invitees_file" id="invitees_file">
+    <button>Submit</button> -->
+
+        <form method="POST" enctype="multipart/form-data">
+
+            {% csrf_token %}
+            <div>
+                {{ form.as_table }}
+            </div>
+
+            <button type="submit">Submit</button>
+        </form>
+{% endblock %}
