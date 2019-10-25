@@ -1,3 +1,5 @@
 *.pyc
 env/*
 automate_pdf/migrations/*
+.idea/*
+*.sqlite3
