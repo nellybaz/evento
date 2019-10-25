@@ -1,4 +1,4 @@
-{% include 'automate_pdf/base.html' %}
+{% extends 'automate_pdf/base.html' %}
 
 {% block content %}
 
@@ -7,7 +7,7 @@
 <input type="text" name="regcoords" id="regcoords" />
 <div id="coords">Click where you want to write the names</div>
 <br>
-<img id="divid" src="/automate_pdf/static/__invite1.jpg" alt="this is the image">
+<img id="divid" src="/static/__invite1.jpg" width="{{ width }}" height="{{ height }}" alt="this is the image">
 <br/><br/> Click to add the coordinates in this text field.<br/>
 
 {#<iframe src="/automa" width="500" height="700">#}

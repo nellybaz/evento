@@ -17,6 +17,7 @@ import zipfile
 #### imports for converting file to image start #####
 import pdf2image
 from PIL import Image
+from PyPDF2 import PdfFileReader
 #### imports for converting file to image end #####
  
 def automate_and_create_zip():
@@ -79,7 +80,7 @@ USE_CROPBOX = False
 STRICT = False
 
 def pdftopil():
-    pil_images = pdf2image.convert_from_path(PDF_PATH, dpi=DPI, output_folder=OUTPUT_FOLDER, first_page=FIRST_PAGE, last_page=LAST_PAGE, fmt=FORMAT, thread_count=THREAD_COUNT, userpw=USERPWD, use_cropbox=USE_CROPBOX, strict=STRICT)
+    pil_images = None #pdf2image.convert_from_path(PDF_PATH, dpi=DPI, output_folder=OUTPUT_FOLDER, first_page=FIRST_PAGE, last_page=LAST_PAGE, fmt=FORMAT, thread_count=THREAD_COUNT, userpw=USERPWD, use_cropbox=USE_CROPBOX, strict=STRICT)
     return pil_images
     
 def save_images(pil_images):
@@ -95,7 +96,7 @@ def save_images(pil_images):
 def convert_pdf_to_image(request):
     if request.method == "GET":
         pil_images = pdftopil()
-        save_images(pil_images)
+        # save_images(pil_images)
         # # pdf = wi(filename='/Users/nelson/Documents/Projects/auto_pdf/invite_files/invite.pdf', resolution=300)
         # # pdfImage = pdf.convert("jpeg")
 
@@ -134,7 +135,10 @@ def download_file(request):
         zip_file = open('/Users/nelson/Documents/Projects/auto_pdf/auto_pdf_dir.zip', 'rb')
         return FileResponse(zip_file)
 
+
 def get_position(request):
+    pdf = PdfFileReader(open('invite_files/invite.pdf', 'rb')).getPage(0).mediaBox
     if request.method == "GET":
         image_url = ""
-        return render(request, 'automate_pdf/pages/get_position.html', {"image": image_url})
+        return render(request, '../templates/automate_pdf/pages/get_position.html',
+                      {"image": image_url, "width": pdf.getWidth, "height": pdf.getHeight})
