@@ -131,12 +131,14 @@ def download_file(request):
 def get_position(request):
     _, file = tempfile.mkstemp(suffix='.pdf')
     fp = open(file, 'wb')
+    pdf_file = request.FILES['file'].file
     if request.method == "POST":
-        for line in request.FILES['file'].file:
-            fp.write(line)
         try:
+            for line in pdf_file:
+                fp.write(line)
+
             image_url = convert_pdf_to_image(file)
-            pdf = PdfFileReader(request.FILES['file'].file).getPage(0).mediaBox
+            pdf = PdfFileReader(pdf_file).getPage(0).mediaBox
             response = {"src": image_url, "width": str(pdf.getWidth()),
                         "height": str(pdf.getHeight()), "status": 'OK'}
         except Exception as e:
