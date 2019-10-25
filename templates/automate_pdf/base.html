@@ -9,11 +9,14 @@
         {% endblock %}
     </title>
 
-        {% block extrastyle %}
+        {% block customCSS %}
         {% endblock %}
 </head>
 <body>
     {% block content %}
+    {% endblock %}
+
+    {% block customJS %}
     {% endblock %}
 </body>
 </html>
