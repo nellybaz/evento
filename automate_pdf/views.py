@@ -80,7 +80,7 @@ STRICT = False
 
 
 def pdftopil(pdf_path):
-    pil_images = pdf2image.convert_from_path(pdf_path, dpi=DPI, output_folder=OUTPUT_FOLDER, first_page=FIRST_PAGE,
+    pil_images = pdf2image.convert_from_bytes(pdf_path, dpi=DPI, output_folder=OUTPUT_FOLDER, first_page=FIRST_PAGE,
                                              last_page=LAST_PAGE, fmt=FORMAT, thread_count=THREAD_COUNT, userpw=USERPWD,
                                              use_cropbox=USE_CROPBOX, strict=STRICT)
     return pil_images
@@ -129,15 +129,11 @@ def download_file(request):
 
 
 def get_position(request):
-    _, file = tempfile.mkstemp(suffix='.pdf')
-    fp = open(file, 'wb')
     pdf_file = request.FILES['file'].file
     if request.method == "POST":
         try:
-            for line in pdf_file:
-                fp.write(line)
 
-            image_url = convert_pdf_to_image(file)
+            image_url = convert_pdf_to_image(pdf_file.getvalue())
             pdf = PdfFileReader(pdf_file).getPage(0).mediaBox
             response = {"src": image_url, "width": str(pdf.getWidth()),
                         "height": str(pdf.getHeight()), "status": 'OK'}
