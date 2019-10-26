@@ -2,40 +2,45 @@ from django.shortcuts import render
 from django.http import HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from .forms import JobsForm
+import json
 
 
-###### imports for pdf automating starts ##############
+# imports for pdf automating starts
 from PyPDF2 import PdfFileWriter, PdfFileReader
 import io
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 import os
 import zipfile
-###### imports for pdf automating ends ##############
 
 
-#### imports for converting file to image start #####
+# imports for converting file to image start
+import tempfile
 import pdf2image
 from PIL import Image
-#### imports for converting file to image end #####
- 
-def automate_and_create_zip():
-    names = open("invitees/names", "r")
+from PyPDF2 import PdfFileReader
 
-    os.makedirs("auto_pdf_dir") #directory where the files will be stored
+
+def automate_and_create_zip(request):
+    names = request.FILES['invitees'].file
+    invite = request.FILES['invite'].file
+    x_coords = float(request.POST['x-coords'])
+    y_coords = float(request.POST['y-coords'])
+
+    # os.makedirs("auto_pdf_dir") #directory where the files will be stored
     for line in names:
         invitee = line.strip()
         packet = io.BytesIO()
         # create a new PDF with Reportlab
         can = canvas.Canvas(packet, pagesize=letter)
-        can.drawString(50, 420, invitee)
+        can.drawString(x_coords, y_coords, invitee)
         can.save()
 
-        #move to the beginning of the StringIO buffer
+        # move to the beginning of the StringIO buffer
         packet.seek(0)
         new_pdf = PdfFileReader(packet)
         # read your existing PDF
-        existing_pdf = PdfFileReader(open("invite_files/invite.pdf", "rb"))
+        existing_pdf = PdfFileReader(invite)
         output = PdfFileWriter()
         # add the "watermark" (which is the new pdf) on the existing page
         page = existing_pdf.getPage(0)
@@ -47,7 +52,7 @@ def automate_and_create_zip():
         outputStream.close()
         print("done")
 
-    #when done, create a zip file of the folder
+    # when done, create a zip file of the folder
 
     def zipdir(path, ziph):
         # ziph is zipfile handle
@@ -55,19 +60,14 @@ def automate_and_create_zip():
             for file in files:
                 ziph.write(os.path.join(root, file))
 
-
-
-    #converting to zip for downloading
+    # converting to zip for downloading
     zipf = zipfile.ZipFile('auto_pdf_dir.zip', 'w', zipfile.ZIP_DEFLATED)
     zipdir("auto_pdf_dir", zipf)
 
-
-    #convert pdf to image
-
+    return HttpResponse(json.dumps({"status": 'OK'}))
 
 
-#DECLARE CONSTANTS
-PDF_PATH = "/Users/nelson/Documents/Projects/auto_pdf/invite_files/invite.pdf"
+# DECLARE CONSTANTS
 DPI = 200
 OUTPUT_FOLDER = None
 FIRST_PAGE = None
@@ -78,34 +78,27 @@ USERPWD = None
 USE_CROPBOX = False
 STRICT = False
 
-def pdftopil():
-    pil_images = pdf2image.convert_from_path(PDF_PATH, dpi=DPI, output_folder=OUTPUT_FOLDER, first_page=FIRST_PAGE, last_page=LAST_PAGE, fmt=FORMAT, thread_count=THREAD_COUNT, userpw=USERPWD, use_cropbox=USE_CROPBOX, strict=STRICT)
+
+def pdftopil(pdf_path):
+    pil_images = pdf2image.convert_from_bytes(pdf_path, dpi=DPI, output_folder=OUTPUT_FOLDER, first_page=FIRST_PAGE,
+                                             last_page=LAST_PAGE, fmt=FORMAT, thread_count=THREAD_COUNT, userpw=USERPWD,
+                                             use_cropbox=USE_CROPBOX, strict=STRICT)
     return pil_images
-    
-def save_images(pil_images):
-    #This method helps in converting the images in PIL Image file format to the required image format
-    index = 1
+
+
+def save_images(pil_images, file):
+    # save each pil_image in the static file
+    # TODO: explore working with temp dir to display image
     for image in pil_images:
-        image.save("__invite" + str(index) + ".jpg")
-        index += 1
+        image.save(file)
 
 
+def convert_pdf_to_image(path):
+    output_file = "static/automate_pdf/imgs/__invite.jpg"  # TODO: Make use of python tempfile function
+    pil_images = pdftopil(path)
+    save_images(pil_images, output_file)
 
-
-def convert_pdf_to_image(request):
-    if request.method == "GET":
-        pil_images = pdftopil()
-        save_images(pil_images)
-        # # pdf = wi(filename='/Users/nelson/Documents/Projects/auto_pdf/invite_files/invite.pdf', resolution=300)
-        # # pdfImage = pdf.convert("jpeg")
-
-        # # for img in pdfImage.sequence:
-        # #     converted_image = wi(image=img)
-        # #     converted_image.save(filename="__inviteImage.jpg")
-
-        return HttpResponse("image generated")
-
-
+    return output_file
 
 
 def index(request):
@@ -115,7 +108,7 @@ def index(request):
             print("job form is valid")
             job = job_form.save()
 
-            automate_and_create_zip() #function to create pdfs for all invitees 
+            automate_and_create_zip()  # function to create pdfs for all invitees
             file_url = ""
             return render(request, 'automate_pdf/pages/download.html', {"file": file_url})
         else:
@@ -125,7 +118,7 @@ def index(request):
 
     else:
         print("get")
-        form  = JobsForm()
+        form = JobsForm()
         return render(request, 'automate_pdf/pages/index.html', {"form": form})
 
 
@@ -134,7 +127,19 @@ def download_file(request):
         zip_file = open('/Users/nelson/Documents/Projects/auto_pdf/auto_pdf_dir.zip', 'rb')
         return FileResponse(zip_file)
 
+
 def get_position(request):
-    if request.method == "GET":
-        image_url = ""
-        return render(request, 'automate_pdf/pages/get_position.html', {"image": image_url})
+    pdf_file = request.FILES['file'].file
+    if request.method == "POST":
+        try:
+
+            image_url = convert_pdf_to_image(pdf_file.getvalue())
+            pdf = PdfFileReader(pdf_file).getPage(0).mediaBox
+            response = {"src": image_url, "width": str(pdf.getWidth()),
+                        "height": str(pdf.getHeight()), "status": 'OK'}
+        except Exception as e:
+            print(e)
+            response = {"status": 'NOK', "error": "An Error occured when converting the pdf"}
+
+        return HttpResponse(json.dumps(response))
+

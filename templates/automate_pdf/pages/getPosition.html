@@ -1,0 +1,18 @@
+{% extends 'automate_pdf/base.html' %}
+
+{% block content %}
+
+    <!-- <div id="divid" style="width:345px; height:556px; background:#0809fe;"></div> -->
+
+<input type="text" name="regcoords" id="regcoords" />
+<div id="coords">Click where you want to write the names</div>
+<br>
+<img id="divid" src="/static/automate_pdf/imgs/__invite1.jpg" width="{{ width }}" height="{{ height }}" alt="this is the image">
+<br/><br/> Click to add the coordinates in this text field.<br/>
+
+
+{% endblock %}
+
+{% block customJS %}
+    <script src="/static/automate_pdf/js/namePos.js"></script>
+{% endblock %}

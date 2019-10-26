@@ -1,25 +1,15 @@
-{% include 'automate_pdf/base.html' %}
-
-{% block content %}
-
-    <!-- <div id="divid" style="width:345px; height:556px; background:#0809fe;"></div> -->
-
-<input type="text" name="regcoords" id="regcoords" />
-<div id="coords">Click where you want to write the names</div>
-<br>
-<img id="divid" src="/__invite1.jpg" width="709px" height="1575px" alt="">
-<br/><br/> Click to add the coordinates in this text field.<br/>
-
-
-<script type="text/javascript">
 /*
  Here add the ID of the HTML elements for which to show the mouse coords
  Within quotes, separated by comma.
  E.g.:   ['imgid', 'divid'];
 */
-var elmids = ['divid'];
+let elmids = ['pdfImg'];
 
-var x, y = 0;       // variables that will contain the coordinates
+let imgID = $("#pdfImg");
+
+let x, y = 0;       // variables that will contain the coordinates
+
+let x_coord, y_coord = 0; // Global variable to use on mouse click
 
 // Get X and Y position of the elm (from: vishalsays.wordpress.com)
 function getXYpos(elm) {
@@ -44,13 +34,13 @@ function getXYpos(elm) {
 // Get X, Y coords, and displays Mouse coordinates
 function getCoords(e) {
  // coursesweb.net/
-  var xy_pos = getXYpos(this);
+  let xy_pos = getXYpos(this);
 
   // if IE
   if(navigator.appVersion.indexOf("MSIE") != -1) {
     // in IE scrolling page affects mouse coordinates into an element
     // This gets the page element that will be used to add scrolling value to correct mouse coords
-    var standardBody = (document.compatMode == 'CSS1Compat') ? document.documentElement : document.body;
+    let standardBody = (document.compatMode == 'CSS1Compat') ? document.documentElement : document.body;
 
     x = event.clientX + standardBody.scrollLeft;
     y = event.clientY + standardBody.scrollTop;
@@ -68,17 +58,16 @@ function getCoords(e) {
 }
 
 // register onmousemove, and onclick the each element with ID stored in elmids
-for(var i=0; i<elmids.length; i++) {
+for(let i=0; i<elmids.length; i++) {
   if(document.getElementById(elmids[i])) {
     // calls the getCoords() function when mousemove
     document.getElementById(elmids[i]).onmousemove = getCoords;
 
     // execute a function when click
     document.getElementById(elmids[i]).onclick = function() {
+      x_coord = x;
+      y_coord = y;
       document.getElementById('regcoords').value = x+ ' , ' +y;
     };
   }
 }
-</script>
-
-{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'automate_pdf/base.html' %}
+
+{% block customCSS %}
+{#    <link href="static/bootstrap-4.3.1/css/bootstrap.min.css" rel="stylesheet">#}
+    <style>
+        /* Container holding the image and the text */
+        .container {
+          position: relative;
+          text-align: center;
+          color: white;
+        }
+
+        /* Top left text */
+        .top-left {
+          position: absolute;
+          top: 8px;
+          left: 16px;
+        }
+
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h1>Welcome</h1>
+    <!-- <input type="file" name="invite_pdf" id="invite_pdf">
+    <input type="file" name="invitees_file" id="invitees_file">
+    <button>Submit</button> -->
+
+        {% csrf_token %}
+
+        <div id="step1">
+            <label for="invite"> Select PDF invite File: </label>
+
+            <input type="file" name="upload" id="invite">
+        </div>
+
+        <div id="step2" style="display: none">
+            <label for="invitees"> Select Invitees File: </label>
+
+            <input type="file" name="upload" id="invitees">
+        </div>
+
+        <div id="step3" style="display: none">
+            <input type="text" name="regcoords" id="regcoords" />
+            <div id="coords">Click where you want to write the names</div>
+            <br>
+            <div class="container">
+                <img id="pdfImg" src="" alt="image of pdf">
+                <div id="namePos" class="top-left">Example Name Position</div>
+            </div>
+        </div>
+
+        <div id="buttons">
+            <button id="nextButton">Next</button>
+        </div>
+{% endblock %}
+
+{% block customJS %}
+    <script src="/static/jquery/jquery-3.4.1.min.js"></script>
+    <script src="/static/automate_pdf/js/namePos.js"></script>
+    <script src="/static/automate_pdf/js/main.js"></script>
+{% endblock %}
